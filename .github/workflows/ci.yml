@@ -1,0 +1,30 @@
+name: CICD
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, closed]
+  release:
+    types: [created]
+
+jobs:
+  run-tests:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run Tests
+        uses: ./.github/workflows/test.yml
+
+  on-pr-merge:
+    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged
+    runs-on: ubuntu-latest
+    steps:
+      - name: Bump Tag
+        uses: ./.github/workflows/bump-tag.yml
+
+  on-release:
+    if: github.event_name == 'release' && github.event.action == 'created'
+    runs-on: ubuntu-latest
+    steps:
+      - name: NPM Publish
+        uses: ./.github/workflows/npm-publish.yml
+  
